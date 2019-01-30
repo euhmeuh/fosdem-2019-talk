@@ -1,5 +1,11 @@
 #lang at-exp slideshow
 
+(require
+  slideshow/text
+  slideshow/code)
+
+(current-main-font "Source Serif Pro")
+
 (define (pretty-table columns elements)
   (table
     (length columns)
@@ -10,128 +16,109 @@
     30
     10))
 
+(define (code-example . txt)
+  (codeblock-pict (apply string-append txt)))
+
 (slide #:title "Why JSON when you can DSL?"
-  @t{Creating file formats & languages that fit your needs}
-  @t{Jérôme Martin})
+  @para{FOSDEM 2019}
+  @para{Minimalistic Languages Developer Room}
+  @para{Creating file formats & languages that fit your needs}
+  @para{by @bt{Jérôme Martin}}
+  @para{Developer at OVH (web/hosting/datacenters)}
+  @para{Former developer at Ubisoft (video games)})
 
-(slide #:title "Horror stories"
-  'alts
-  (list
-    (list
-      @t{Lua files used as data}
-      @para{It started as arrays only but soon became a monster}
-      'next
-      @item{It was doing shady stuff when executed (think: checking conditions from global variables)}
-      @item{It was difficult to parse}
-      @item{We had to write a whole custom Lua parser that would detect some patterns and apply regexps})
+(slide #:title "What we expect from JSON"
+  @para{JSON is used to represent structured data}
+  @code-example|{
+{
+  "name": "My pony ranch",
+  "owner": {
+    "name": "Jerome",
+    "surname": "Martin",
+  },
+  "ponies": [
+    { "name": "Rarity", "level": "3" },
+    { "name": "Applejack", "level": "2" },
+    { "name": "Twilight", "level": "2" },
+  ]
+}
+}|)
 
-    (list
-      @t{Grunt files}
-      @para{Same story: it started as a good idea but usually become a humongous blob of custom code}
-      'next
-      @item{Start with a base of packaging code (copy/paste and replace stuff around)}
-      @item{Add a layer for i18n}
-      @item{Add a layer for calling linters}
-      @item{Add a layer for handling dev/prod envs}
-      @item{Add a layer of sugar}
-      @item{Bon appetit!})
+(slide #:title "How JSON betrays us"
+  @para{It allows some types only: strings, numbers, arrays, dicts... that's it.}
+  'next
+  @para{It fails at representing processes and computations.}
+  'next
+  @para{It fails at self-referencing.})
 
-    (list
-      @t{Javascript inside CouchDB}
-      'next
-      @item{No comments here (sorry couchdb users!)}
-      @item{Javascript in <not a browser> is a bad idea anyways (Gnome 3 anyone?)})))
+(slide #:title "How JSON betrays us"
+  @para{JSON is not enough, what do we do?}
+  'next
+  @para{We add javascript to it!}
+  @para{<insert code here>}
+  'next
+  @para{Configuration files soon become monsters.}
+  'next
+  @para{WHY?})
 
-(slide #:title "Here comes the DSL!"
-  'alts
-  (list
-    (list
-      @t{Domain Specific Language}
-      @para{A data structure is just a stupid programming language.
-            -- Bill Gosper}
-      'next
-      @t{Different types of DSLs:}
-      'next
-      @item{Declarative (HTML, Glade, WPF)}
-      'next
-      @item{Query-style (SQL, GraphQL, XPath, Regexp)}
-      'next
-      @item{Libraries (SDL, Qt, Box2D)}
-      'next
-      @item{Complex tasks (Makefile, Verilog, GameMaker Language)})
+(slide #:title "How JSON betrays us"
+  @para{"A data structure is just a stupid programming language" -- Bill Gosper}
+  'next
+  @para{JSON, XML, HTML, CSS... are all stupid programming languages.}
+  'next
+  @para{When we try representing concepts with them, abstraction inherently leaks.}
+  @para{We always end up writing the missing abstraction layer by hand.})
 
-    (list
-      (pretty-table
-        '("Languages"       "Domain")
-        '("HTML, CSS"       "Web pages"
-          "Glade, WPF, Qt"  "Application Interface"
-          "SQL, GraphQL"    "Database fetching"
-          "Regexp"          "Text filtering"
-          "SDL, OpenGL"     "Pixel rendering"
-          "Box2D, ODE"      "Physics simulation"
-          "Makefile"        "File cache invalidation"
-          "Verilog"         "Hardware design and simulation"
-          "GML"             "Gameplay & actor behaviour")))))
+(slide #:title "In need for meta"
+  @para{We try to make them less stupid:}
+  @item{CSS → Less}
+  @item{Javascript → Babel}
+  @item{HTML → Mustache templates / JSX syntax}
+  @item{C → Preprocessor}
+  @item{C++ → Templates}
+  @item{Python → meta-classes}
+  @item{C# → Reflection})
 
-(slide #:title "Why would I make my own?"
-  @t{Pros:}
-  @item{Built inside a business context}
-  @item{Fit your instant needs without having to learn how to use it}
-  @item{Forces you to describe your business in simple terms}
-  @item{Extendable at will}
-  @t{Cons:}
-  @item{Usually not documented}
-  @item{No possible former experience from newcomers}
-  @item{Can become useless if the project it served is canceled}
-  @item{Difficulty to work in teams if designed by a few})
+(slide @para{There's a simpler way.})
 
-(slide #:title "Main argument against DSLs:"
-  @para{But newcomers will have no previous expertise of the language!}
-  @t{Answer:}
-  @para{Language knowledge has always been irrelevant to the productivity of developers in a new team.}
-  @para{Domain knowledge is relevant.}
-  @t{Example:}
-  @para{A new frontend developer starts working in the bank industry.
-        His javascript knowledge means nothing compared to his ability to understand banking.
-        Therefore, a language that explains banking with precision is more valuable for him
-        and will be easier to learn than discovering a big ball of javascript that somehow "does" banking.})
+(slide #:title "The DSL way"
+  @para{Domain Specific Languages (DSL)}
+  'next
+  @para{The abstraction becomes a language.}
+  'next
+  @para{Examples: Makefile, GameMaker Language, Regexps, SQL, Qt...})
 
-(slide #:title "When to go for a DSL?"
-  @t{If you...}
-  @item{work in a specific domain}
-  @item{need to describe data, processes or systems}
-  @item{are sure that the problem you are trying to solve is gonna stick around for a long time}
-  @t{then make a DSL!})
+(slide #:title "The DSL way"
+  @para{Structured data will always be better expressed with a specific language for that domain than a generic data structure.}
+  'next
+  @item{Banking data → banking language}
+  @item{Game data → game language}
+  @item{Medical data → medical language})
 
-(slide #:title "Your DSL is already there!")
-#|
-How to design a DSL?
+(slide @para{But isn't writing a full language excessive?})
 
-    Just use it first. But it doesn't exist! Just write down how you would use it if it existed. Just explain your need.
+(slide #:title "Rule #1: Abstraction leaks"
+  @para{Any data eventually becomes a DSL *naturally* by leaking through abstractions.}
+  'next
+  @para{Most programs are tools made to prevent this leakage.}
+  'next
+  @para{Only most of the time they become a badly written half implementation of lisp.}
+  'next
+  @para{So why not using lisp in the first place?})
 
-    Be confortable with a way of writing it (its syntax). Some suggestions, from easy to hard:
-        s-expressions
-        one line per instruction
-        C-like
-        plain English
+(slide #:title "Racket"
+  @para{Racket, the language-oriented programming language}
+  'next
+  @para{As a lisp language, it allows writing itself *by design*.}
+  @para{Racket is specialized in writing Domain Specific Languages (DSL)})
 
-    Try to find other usecases and see how they fit in what you already wrote. Rework some old parts.
+(slide #:title "How to make a DSL"
+  @para{It takes 5 lines of Racket to implement a generic parser for any language.}
+  @para{<insert code here>})
 
-    Notice we didn't write any parsing code yet. Show your files to future users and get their feedbacks. Try to see if they can understand your intention just from reading your code.
+(slide #:title "How to make a DSL"
+  @para{Using the lisp syntax called "s-expressions", you blur the frontier between code and data.}
+  @para{<insert server+html+js code here>})
 
-    The idea seems good now, let's write the parser!
-        If you chose s-exprs, your parser is done.
-        If you chose one-line per instructions, your parser is easy to write in about 5 lines of Racket.
-        If you chose a more programming language style, use brag.
-        If you chose plain English.. Come on, you should be at the AI workshop by now.
-
-    The elements of a DSL: Reader > Parser > Expander
-        Reader: cut a text stream in parts
-        Parser: give meaning to those parts
-        Expander: generate actual code
-
-|#
-
-(slide #:title "Racket: the DSL factory")
-
-(slide #:title "Join us and try making your own!")
+(slide #:title "Come make your language today!"
+  @para{})
