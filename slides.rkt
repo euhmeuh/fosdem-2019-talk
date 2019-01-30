@@ -16,20 +16,22 @@
     30
     10))
 
+(define (cpara . args)
+  (apply para #:align 'center args))
+
+(define (title txt [subtitle #f])
+  (vc-append 20
+    (titlet txt)
+    (if subtitle
+        (small (para #:align 'center subtitle))
+        (blank))
+    (hline 200 50)))
+
 (define (code-example . txt)
-  (codeblock-pict (apply string-append txt)))
+  (small (codeblock-pict (apply string-append txt))))
 
-(slide #:title "Why JSON when you can DSL?"
-  @para{FOSDEM 2019}
-  @para{Minimalistic Languages Developer Room}
-  @para{Creating file formats & languages that fit your needs}
-  @para{by @bt{Jérôme Martin}}
-  @para{Developer at OVH (web/hosting/datacenters)}
-  @para{Former developer at Ubisoft (video games)})
-
-(slide #:title "What we expect from JSON"
-  @para{JSON is used to represent structured data}
-  @code-example|{
+(define code-examples (list
+@code-example|{
 {
   "name": "My pony ranch",
   "owner": {
@@ -37,29 +39,121 @@
     "surname": "Martin",
   },
   "ponies": [
-    { "name": "Rarity", "level": "3" },
-    { "name": "Applejack", "level": "2" },
-    { "name": "Twilight", "level": "2" },
+    { "name": "Rarity", "level": 3 },
+    { "name": "Applejack", "level": 2 },
+    { "name": "Twilight", "level": 2 },
   ]
 }
-}|)
+}|
 
-(slide #:title "How JSON betrays us"
-  @para{It allows some types only: strings, numbers, arrays, dicts... that's it.}
-  'next
-  @para{It fails at representing processes and computations.}
-  'next
-  @para{It fails at self-referencing.})
+@code-example|{
+{
+  "name": "My pony ranch",
+  "owner": {
+    "name": "Jerome",
+    "surname": "Martin",
+  },
+  "ponies": [...]
+}
+}|
 
-(slide #:title "How JSON betrays us"
-  @para{JSON is not enough, what do we do?}
+@code-example|{
+{
+  "name": "My pony ranch",
+  "owner": "1234", ← here
+  "owners": {
+    "1234": { ← here
+      "name": "Jerome",
+      "surname": "Martin"
+    }
+  },
+  "ponies": [...]
+}
+}|
+
+@code-example|{
+{
+  "name": "My pony ranch",
+  "maxLevel": 3,
+  "ponies": [
+    { "name": "Rarity", "level": 3 },
+    { "name": "Applejack", "level": 2 },
+    { "name": "Twilight", "level": 2 },
+  ],
+  "numberOfMaxLvlPonies": ???, ← cannot be computed with JSON only
+}
+}|
+
+@code-example|{
+// sample Grunt file from any JS project
+module.exports = function (grunt) {
+  "use strict";
+  require("matchdep").filterAll("grunt-*").forEach(grunt.loadNpmTasks);
+
+  grunt.initConfig({
+    pkg: grunt.file.readJSON("package.json"),
+    distdir: "dist",
+    srcdir: "src",
+    transdir: ".work/.trans",
+    testdir: ".test/",
+    builddir: ".work/.tmp",
+    name: grunt.file.readJSON("package.json").name,
+  // thousands of lines ...
+}|
+
+))
+
+(define (example n) (list-ref code-examples n))
+
+(define (side-by-side a b)
+  (hc-append 20 a (arrow 30 0) b))
+
+;; --- Begin slides ---
+
+(slide
+  (title "FOSDEM 2019" "Minimalistic Languages Devroom")
+  (title "Why JSON when you can DSL?"
+         "Creating file formats & languages that fit your needs")
+  @cpara{@bt{Jérôme Martin}}
+  @item{Developer at OVH (hosting/datacenters)}
+  @item{Former developer at Ubisoft (video games)})
+
+(slide
+  (title "What we expect from JSON")
+  @para{JSON is used to represent structured data:}
   'next
-  @para{We add javascript to it!}
-  @para{<insert code here>}
+  (example 0)
   'next
-  @para{Configuration files soon become monsters.}
+  @para{It allows some types only: strings, numbers, arrays, dicts... that's it.})
+
+(slide
+  (title "What if we want self-references?")
   'next
-  @para{WHY?})
+  @para{We need to add IDs:}
+  (side-by-side (example 1) (example 2))
+  @para{Good luck to keep them in sync...})
+
+(slide
+  (title "What if we need to count some elements?")
+  (example 3)
+  @para{We need a program to process our data.})
+
+(slide
+  (title "JSON is not enough")
+  'next
+  @item{It fails at self-referencing.}
+  'next
+  @item{It fails at representing processes and computations.})
+
+(slide
+  (title "What does everyone do?")
+  'next
+  @para{Let's add javascript to it!}
+  (example 4)
+  'next
+  @para{What were simple data files have become monsters.}
+  'next
+  @para{WHY does it have to be that way? :(})
 
 (slide #:title "How JSON betrays us"
   @para{"A data structure is just a stupid programming language" -- Bill Gosper}
