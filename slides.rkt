@@ -1,6 +1,7 @@
 #lang at-exp slideshow
 
 (require
+  pict/color
   slideshow/text
   slideshow/code)
 
@@ -29,6 +30,14 @@
 
 (define (code-example . txt)
   (small (codeblock-pict (apply string-append txt))))
+
+(define (text-block . txt)
+  (blue (small
+    (apply vl-append
+      (for/list ([line (in-lines
+                         (open-input-string
+                           (apply string-append txt)))])
+        (tt line))))))
 
 (define code-examples (list
 @code-example|{
@@ -84,7 +93,7 @@
 }
 }|
 
-@code-example|{
+@text-block|{
 // sample Grunt file from any JS project
 module.exports = function (grunt) {
   "use strict";
@@ -98,7 +107,50 @@ module.exports = function (grunt) {
     testdir: ".test/",
     builddir: ".work/.tmp",
     name: grunt.file.readJSON("package.json").name,
+
   // thousands of lines ...
+}|
+
+@code-example|{
+(provide (except-out (all-from-out racket/base)
+                     #%module-begin)
+         (rename-out [module-begin #%module-begin])
+
+(define-syntax-rule (module-begin stx)
+  (#%module-begin 'stx)) ; ← insert your logic here
+}|
+
+@code-example|{
+(response (pony id)
+  (define the-pony (get-pony-by-id id)) ; ← database fetching
+  (html
+    (head
+      (style
+        (.pony (border 1 'solid 'pink) ; ← CSS
+               (background-color 'dark-pink))))
+    (body
+      (div ([class "pony"]) (pony-name the-pony)) ; ← HTML
+      (javascript
+        (function (feed-pony elt) ; ← Javascript
+          (add-class elt "fed"))))))
+}|
+
+@code-example|{
+#lang virtual-mpu/mpu
+(mpu "6802"
+  (registers (a b sr [ix 16] [sp 16] [pc 16]))
+  (status sr (carry overflow zero negative interrupt half))
+  (interrupts interrupt [irq #xFFF8]
+                        [soft #xFFFA]
+                        [nmi #xFFFC]
+                        [restart #xFFFE])
+  (operations
+    ;; branches
+    (bcc "Branch if carry clear" (rel) (branch (carry?) rel))
+    (bcs "Branch if carry set" (rel) (branch (not (carry?)) rel))
+
+    ;; other operations...
+    ))
 }|
 
 ))
@@ -139,23 +191,23 @@ module.exports = function (grunt) {
   @para{We need a program to process our data.})
 
 (slide
-  (title "JSON is not enough")
+  (title "JSON is not enough" "In fact, data structures are not enough!")
   'next
-  @item{It fails at self-referencing.}
+  @item{They fail at self-referencing.}
   'next
-  @item{It fails at representing processes and computations.})
+  @item{They fail at representing processes and computations.})
 
 (slide
   (title "What does everyone do?")
   'next
   @para{Let's add javascript to it!}
+  'next
   (example 4)
   'next
-  @para{What were simple data files have become monsters.}
-  'next
-  @para{WHY does it have to be that way? :(})
+  @para{What were simple data files have become monsters. WHY? :(})
 
-(slide #:title "How JSON betrays us"
+(slide
+  (title "How data structures betrays us")
   @para{"A data structure is just a stupid programming language" -- Bill Gosper}
   'next
   @para{JSON, XML, HTML, CSS... are all stupid programming languages.}
@@ -163,7 +215,8 @@ module.exports = function (grunt) {
   @para{When we try representing concepts with them, abstraction inherently leaks.}
   @para{We always end up writing the missing abstraction layer by hand.})
 
-(slide #:title "In need for meta"
+(slide
+  (title "In need for meta")
   @para{We try to make them less stupid:}
   @item{CSS → Less}
   @item{Javascript → Babel}
@@ -173,46 +226,63 @@ module.exports = function (grunt) {
   @item{Python → meta-classes}
   @item{C# → Reflection})
 
-(slide @para{There's a simpler way.})
+(slide
+  (title "What if I told you")
+  @cpara{There's a simpler way.}
+  @cpara{There's a more personal way.})
 
-(slide #:title "The DSL way"
-  @para{Domain Specific Languages (DSL)}
+(slide
+  (title "The DSL way")
+  @cpara{Domain Specific Languages}
   'next
-  @para{The abstraction becomes a language.}
+  @para{→ The abstraction becomes a language.}
   'next
-  @para{Examples: Makefile, GameMaker Language, Regexps, SQL, Qt...})
+  @para{Examples: Makefile, GameMaker Language, Regexps, SQL, Qt...}
+  @para{All those languages are used to represent complex data structures.})
 
-(slide #:title "The DSL way"
+(slide
+  (title "The DSL way")
   @para{Structured data will always be better expressed with a specific language for that domain than a generic data structure.}
   'next
   @item{Banking data → banking language}
   @item{Game data → game language}
   @item{Medical data → medical language})
 
-(slide @para{But isn't writing a full language excessive?})
+(slide
+  @cpara{But isn't writing a full language excessive?})
 
-(slide #:title "Rule #1: Abstraction leaks"
+(slide
+  (title "Rule #1: Abstraction leaks")
   @para{Any data eventually becomes a DSL *naturally* by leaking through abstractions.}
   'next
-  @para{Most programs are tools made to prevent this leakage.}
+  @para{Most programs are tools made to prevent this leakage (a.k.a. "middleware").}
   'next
   @para{Only most of the time they become a badly written half implementation of lisp.}
   'next
   @para{So why not using lisp in the first place?})
 
-(slide #:title "Racket"
-  @para{Racket, the language-oriented programming language}
+(slide
+  (title "Racket" "The language-oriented programming language")
   'next
   @para{As a lisp language, it allows writing itself *by design*.}
   @para{Racket is specialized in writing Domain Specific Languages (DSL)})
 
-(slide #:title "How to make a DSL"
+(slide
+  (title "How to make a DSL")
   @para{It takes 5 lines of Racket to implement a generic parser for any language.}
-  @para{<insert code here>})
+  (example 5))
 
-(slide #:title "How to make a DSL"
+(slide
+  (title "Code == Data")
   @para{Using the lisp syntax called "s-expressions", you blur the frontier between code and data.}
-  @para{<insert server+html+js code here>})
+  (example 6))
 
-(slide #:title "Come make your language today!"
-  @para{})
+(slide
+  (title "Code == Data")
+  (example 7))
+
+(slide
+  (title "Come make your language today!")
+  @para{Join me at the booth @bt{K.4.401} at @bt{17:00} to make your own language!}
+  @para{Yes, you can actually make your own language in an hour with Racket!}
+  @para{See you there!})
