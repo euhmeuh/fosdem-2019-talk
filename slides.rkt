@@ -280,7 +280,7 @@ suppose that you give him some in a big glass.
   'next
   @para{→ The abstraction becomes a language.}
   'next
-  @para{Examples: Makefile, GameMaker Language, Regexps, SQL, Qt...}
+  @para{Examples: Makefile, Regexps, SQL, Qt, GameMaker Language...}
   @para{All those languages are used to represent complex data structures.})
 
 (slide
@@ -297,6 +297,7 @@ suppose that you give him some in a big glass.
 (slide
   (title "Rule #1: Abstraction leaks")
   @para{Any data eventually becomes a DSL *naturally* by leaking through abstractions.}
+  @cpara{→ Natural growth}
   'next
   @para{Most programs are tools made to prevent this leakage (a.k.a. "middleware").}
   'next
