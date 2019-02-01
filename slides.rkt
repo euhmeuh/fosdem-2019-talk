@@ -3,7 +3,8 @@
 (require
   pict/color
   slideshow/text
-  slideshow/code)
+  slideshow/code
+  rsvg)
 
 (current-main-font "Source Serif Pro")
 
@@ -20,13 +21,15 @@
 (define (cpara . args)
   (apply para #:align 'center args))
 
+(define (separator) (hline 200 50))
+
 (define (title txt [subtitle #f])
   (vc-append 20
     (titlet txt)
     (if subtitle
         (small (para #:align 'center subtitle))
         (blank))
-    (hline 200 50)))
+    (separator)))
 
 (define (code-example . txt)
   (small (codeblock-pict (apply string-append txt))))
@@ -38,6 +41,30 @@
                          (open-input-string
                            (apply string-append txt)))])
         (tt line))))))
+
+(define (racket-title)
+  (vc-append
+    (hc-append 10
+      (svg-file->pict "racket-logo.svg" 0.25)
+      (vl-append 5
+        (big (t "Racket"))
+        (small (t "The language-oriented programming language"))
+        (small (blue (t "racket-lang.org")))))
+    (separator)))
+
+(define (github-project name)
+  (small (para (hb-append (t "Full project: ")
+                          (blue (tt (string-append "github.com/" name)))))))
+
+(define (id-card)
+  (hc-append 10
+    (scale (bitmap "jerome.jpg") 0.5)
+    (vl-append 5
+      (t "Jérôme Martin")
+      (t "Web developer at OVH")
+      (t "Racket contributor")
+      (blue (tt "github.com/euhmeuh"))
+      (tt "\"jerome\" on racket.slack.com"))))
 
 (define code-examples (list
 @code-example|{
@@ -112,6 +139,7 @@ module.exports = function (grunt) {
 }|
 
 @code-example|{
+#lang racket/base
 (provide (except-out (all-from-out racket/base)
                      #%module-begin)
          (rename-out [module-begin #%module-begin])
@@ -121,6 +149,7 @@ module.exports = function (grunt) {
 }|
 
 @code-example|{
+#lang web-galaxy
 (response (pony id)
   (define the-pony (get-pony-by-id id)) ; ← database fetching
   (html
@@ -151,6 +180,20 @@ module.exports = function (grunt) {
 
     ;; other operations...
     ))
+}|
+
+@code-example|{
+#lang scribble/base
+
+@title{On the Cookie-Eating Habits of Mice}
+
+If you give a mouse a cookie, he's going to ask for a
+glass of milk.
+
+@section{The Consequences of Milk}
+
+That ``squeak'' was the mouse asking for milk. Let's
+suppose that you give him some in a big glass.
 }|
 
 ))
@@ -262,27 +305,59 @@ module.exports = function (grunt) {
   @para{So why not using lisp in the first place?})
 
 (slide
-  (title "Racket" "The language-oriented programming language")
+  (racket-title)
   'next
   @para{As a lisp language, it allows writing itself *by design*.}
-  @para{Racket is specialized in writing Domain Specific Languages (DSL)})
+  'next
+  @para{Racket is specialized in writing Domain Specific Languages (DSL):}
+  @item{#lang slideshow}
+  @item{#lang racket/gui}
+  @item{#lang scribble}
+  @item{#lang video}
+  @item{#lang web-server})
 
 (slide
   (title "How to make a DSL")
-  @para{It takes 5 lines of Racket to implement a generic parser for any language.}
-  (example 5))
+  @para{It takes 5 lines of Racket to implement a generic parser for any language:}
+  (example 5)
+  (separator)
+  @para{Save those lines in a file @it{"my-lang.rkt"} and you got yourself a full @bt{reader}, @bt{parser} & @bt{expander} with all the standard functions from Racket.})
 
 (slide
   (title "Code == Data")
   @para{Using the lisp syntax called "s-expressions", you blur the frontier between code and data.}
-  (example 6))
+  (example 6)
+  (separator)
+  (github-project "euhmeuh/web-galaxy"))
 
 (slide
   (title "Code == Data")
-  (example 7))
+  (example 7)
+  (separator)
+  (github-project "euhmeuh/virtual-mpu"))
+
+(slide
+  (title "Scribble" "The Racket documentation language")
+  (example 8))
+
+(slide
+  (title "Take away")
+  'next
+  (small @item{When data structures are not enough, we seek more abstraction.})
+  'next
+  (small @item{DSLs are the best way to express those abstractions as languages.})
+  'next
+  (small @item{Racket is a language specialized in writing languages.})
+  'next
+  (small @item{By putting your "middleware" logic into a language, you make sure it can evolve and always fit your domain.})
+  'next
+  (small @item{You don't have to write ugly data transformation scripts ever again!})
+  'next
+  (small @item{You provide your team with a single piece of documentation concerning your domain: the language spec.}))
 
 (slide
   (title "Come make your language today!")
-  @para{Join me at the booth @bt{K.4.401} at @bt{17:00} to make your own language!}
+  @para{Join me at the booth @bt{K.4.201} at @bt{17:20} to make your own language!}
   @para{Yes, you can actually make your own language in an hour with Racket!}
-  @para{See you there!})
+  @para{See you there!}
+  (id-card))
