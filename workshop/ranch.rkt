@@ -1,4 +1,4 @@
-#lang s-exp "pony-lang.rkt"
+#lang s-exp workshop/expander
 
 (ranch
   (ponies
