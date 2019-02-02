@@ -16,7 +16,7 @@
 (define (pony-read-syntax src in)
   (with-syntax ([parse-tree (parse src (make-tokenizer in src))])
     (strip-context
-      #'(module pony-file workshop/expander.rkt
+      #'(module pony-file workshop/expander
           parse-tree))))
 
 (define (make-tokenizer port [path #f])
